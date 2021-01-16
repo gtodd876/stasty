@@ -1,8 +1,8 @@
-import Head from "next/head";
-import { Heading, Center, Box, Text, Button } from "@chakra-ui/react";
+import { Button, Flex, Heading } from "@chakra-ui/react";
 import { signIn, useSession } from "next-auth/client";
-import { useEffect } from "react";
 import { useRouter } from "next/dist/client/router";
+import Head from "next/head";
+import React, { useEffect } from "react";
 
 export default function Home() {
   const [session, loading] = useSession();
@@ -17,15 +17,20 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Stasty - Sign in</title>
+        <title>Stasty - Home</title>
         <link rel='icon' href='/favicon.ico' />
       </Head>
-      <Box w='100%' h='100vh' px={4} py={6} position='relative'>
-        <Center>
-          <Heading mb={4}>Stasty</Heading>
-          <Button onClick={() => signIn("google")}>Sign in with Google</Button>
-        </Center>
-      </Box>
+      <Flex
+        alignItems='center'
+        justifyContent='center'
+        direction='column'
+        h='80vh'
+      >
+        <Heading mb={4} size='4xl'>
+          Stasty
+        </Heading>
+        <Button onClick={() => signIn("google")}>Sign in with Google</Button>
+      </Flex>
     </>
   );
 }

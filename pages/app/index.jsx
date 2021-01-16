@@ -1,18 +1,41 @@
 import { AddIcon, SearchIcon } from "@chakra-ui/icons";
 import {
   Center,
-  Heading,
   IconButton,
   Input,
   InputGroup,
   InputLeftElement,
+  Link,
   VStack,
 } from "@chakra-ui/react";
+import { getSession, useSession } from "next-auth/client";
 import Head from "next/head";
+import { Link as NextLink } from "next/link";
 import { useRouter } from "next/router";
 
 export default function Home() {
   const router = useRouter();
+  const [session, loading] = useSession();
+
+  if (loading) return null;
+
+  if (!loading && !session) {
+    return (
+      <Modal closeOnOverlayClick={false} isOpen={true} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Session Expired</ModalHeader>
+          <ModalBody>Please signin again.</ModalBody>
+          <ModalFooter>
+            <Link as={NextLink} to='/'>
+              Signin
+            </Link>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    );
+  }
+
   return (
     <>
       <Head>
@@ -22,9 +45,6 @@ export default function Home() {
       <VStack spacing={4}>
         <header>
           <Center>
-            <Heading as='h1' size='4xl'>
-              Stasty
-            </Heading>
             <IconButton
               aria-label='Add photo'
               icon={<AddIcon />}
@@ -47,4 +67,11 @@ export default function Home() {
       </VStack>
     </>
   );
+}
+
+export async function getServerSideProps(ctx) {
+  const session = await getSession(ctx);
+  return {
+    props: { session },
+  };
 }
