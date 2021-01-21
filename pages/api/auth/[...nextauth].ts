@@ -23,4 +23,17 @@ export default (req, res) =>
     pages: {
       signIn: "/",
     },
+    callbacks: {
+      async session(session: any, user: any) {
+        session.user.id = user.id;
+
+        return session;
+      },
+      async jwt(tokenPayload, user: any, account, profile, isNewUser) {
+        if (tokenPayload && user) {
+          return { ...tokenPayload, id: `${user.id}` };
+        }
+        return tokenPayload;
+      },
+    },
   });

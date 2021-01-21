@@ -10,6 +10,5 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
     },
     process.env.CLOUDINARY_API_SECRET
   );
-  console.log("Signature: ", signature);
   res.status(200).json({ signature, timestamp });
 };
