@@ -6,7 +6,6 @@ import {
   FormLabel,
   Image,
   Input,
-  Link,
   Modal,
   ModalBody,
   ModalContent,
@@ -15,11 +14,10 @@ import {
   ModalOverlay,
   VStack,
 } from "@chakra-ui/react";
-import { useForm } from "react-hook-form";
-import React, { useEffect, useRef, useState } from "react";
 import { getSession, useSession } from "next-auth/client";
 import { useRouter } from "next/router";
-import NextLink from "next/link";
+import React, { useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
 import { NextChakraLink } from "../../components/NextChakraLink";
 
 export default function Add() {
@@ -45,7 +43,6 @@ export default function Add() {
   async function uploadPhoto(file) {
     const response = await fetch("/api/upload");
     const { signature, timestamp } = await response.json();
-    console.log({ signature, timestamp });
     const photoFormData = new FormData();
     photoFormData.append("file", file);
     photoFormData.append("api_key", "631337223918493");
@@ -66,13 +63,16 @@ export default function Add() {
     setIsUploading(true);
     const imageData = await uploadPhoto(file);
     if (imageData && imageData.secure_url) setImageUrl(imageData.secure_url);
-    console.log(imageData);
     setIsUploading(false);
   }
 
   async function onSubmit(values) {
     values.imageUrl = imageUrl;
     values.user = session.user;
+    values.keywords = values.keywords
+      .trim()
+      .split(" ")
+      .map((word) => word.trim());
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_HOST}/api/add`,
       {
