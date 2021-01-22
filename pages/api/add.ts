@@ -14,5 +14,5 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     updatedAt: new Date().toDateString(),
   });
 
-  res.json({});
+  res.json(result);
 };
