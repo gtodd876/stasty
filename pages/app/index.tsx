@@ -1,7 +1,8 @@
 import { AddIcon, SearchIcon } from "@chakra-ui/icons";
 import {
+  Box,
   Center,
-  IconButton,
+  Button,
   Input,
   InputGroup,
   InputLeftElement,
@@ -13,6 +14,9 @@ import {
   ModalOverlay,
   Text,
   VStack,
+  Badge,
+  Heading,
+  HStack,
 } from "@chakra-ui/react";
 import { getSession, useSession } from "next-auth/client";
 import Head from "next/head";
@@ -22,6 +26,7 @@ import { NextChakraLink } from "../../components/NextChakraLink";
 import { connectToDb } from "../../db/database";
 import { getAllItems } from "../../db/item";
 import { debounce } from "../../utils/debounce";
+import Image from "next/image";
 
 export default function Home({ initialResults }) {
   const [results, setResults] = useState(initialResults || []);
@@ -86,14 +91,16 @@ export default function Home({ initialResults }) {
       <VStack spacing={4}>
         <header>
           <Center mb={4}>
-            <IconButton
+            <Button
               aria-label='Add photo'
-              icon={<AddIcon />}
+              leftIcon={<AddIcon />}
               onClick={() => router.push("/app/add")}
               size='lg'
               mt='3'
               ml='4'
-            />
+            >
+              Add Image
+            </Button>
           </Center>
           <Center>
             <InputGroup maxW='800px' margin='0 auto'>
@@ -112,7 +119,7 @@ export default function Home({ initialResults }) {
             </InputGroup>
           </Center>
         </header>
-        <main>
+        <main style={{ width: "100%", padding: "2rem" }}>
           {results.length < 1 && (
             <Center>
               <Text fontSize='6xl'>No results 😭</Text>
@@ -120,9 +127,39 @@ export default function Home({ initialResults }) {
           )}
           {results &&
             results.map((item) => (
-              <Center key={item._id}>
-                <pre>{JSON.stringify(item, null, 2)}</pre>
-              </Center>
+              <Box
+                w='100%'
+                borderWidth='1px'
+                borderRadius='lg'
+                overflow='hidden'
+                marginBottom={4}
+                key={item._id}
+              >
+                <HStack>
+                  <Box width='100px' height='100px' position='relative'>
+                    <Image
+                      src={item.imageUrl}
+                      layout='fill'
+                      objectFit='cover'
+                    />
+                  </Box>
+                  <Heading size='lg'>{item.title}</Heading>
+                  <Box d='flex' flexDir='row' alignItems='baseline'>
+                    {item.keywords.map((keyword, index) => (
+                      <Badge
+                        borderRadius='full'
+                        px='2'
+                        colorScheme='teal'
+                        key={index}
+                        m={1}
+                        marginBottom={0}
+                      >
+                        {keyword}
+                      </Badge>
+                    ))}
+                  </Box>
+                </HStack>
+              </Box>
             ))}
         </main>
       </VStack>
