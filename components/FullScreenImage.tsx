@@ -15,8 +15,8 @@ export default function FullScreenImage({ imageUrl, onClose }) {
       ></Box>
       <Image
         src={imageUrl}
-        width='100%'
-        height='100%'
+        width='100vh'
+        height='100vh'
         position='absolute'
         top={0}
         left={0}
@@ -32,6 +32,10 @@ export default function FullScreenImage({ imageUrl, onClose }) {
         right='32px'
         zIndex={100}
         color='white'
+        backgroundColor='#111'
+        padding='8px 16px'
+        borderRadius='50%'
+        opacity='0.8'
       >
         X
       </Box>
