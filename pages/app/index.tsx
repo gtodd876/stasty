@@ -1,8 +1,7 @@
 import { AddIcon, SearchIcon } from "@chakra-ui/icons";
 import {
-  Box,
-  Center,
   Button,
+  Center,
   Input,
   InputGroup,
   InputLeftElement,
@@ -14,30 +13,30 @@ import {
   ModalOverlay,
   Text,
   VStack,
-  Badge,
-  Heading,
-  HStack,
 } from "@chakra-ui/react";
 import { getSession, useSession } from "next-auth/client";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
+import FullScreenImage from "../../components/FullScreenImage";
+import Item from "../../components/Item";
 import { NextChakraLink } from "../../components/NextChakraLink";
 import { connectToDb } from "../../db/database";
 import { getAllItems } from "../../db/item";
+import { UserSession } from "../../types";
 import { debounce } from "../../utils/debounce";
-import Image from "next/image";
 
 export default function Home({ initialResults }) {
   const [results, setResults] = useState(initialResults || []);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [imageUrl, setImageUrl] = useState(initialResults || []);
+
   const debounceOnChange = React.useCallback(
     debounce(handleSearchTerms, 500),
     []
   );
   const router = useRouter();
   const [session, loading] = useSession();
-
-  if (loading) return null;
 
   if (!loading && !session) {
     return (
@@ -62,7 +61,8 @@ export default function Home({ initialResults }) {
   }
 
   async function handleSearchTerms(searchTerms: string) {
-    if (searchTerms) {
+    if (searchTerms && session) {
+      const { user } = session;
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_HOST}/api/search`,
         {
@@ -70,7 +70,7 @@ export default function Home({ initialResults }) {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ searchTerms }),
+          body: JSON.stringify({ searchTerms, user }),
         }
       ).catch((err) => console.error("error posting data: ", err));
       if (response) {
@@ -82,13 +82,27 @@ export default function Home({ initialResults }) {
     }
   }
 
+  const handleFullScreenImage = (
+    event:
+      | React.MouseEvent<HTMLDivElement>
+      | React.KeyboardEvent<HTMLDivElement>,
+    imageUrl: string
+  ) => {
+    setImageUrl(imageUrl);
+    setIsFullScreen(true);
+  };
+
+  const handleExitFullScreen = () => {
+    setIsFullScreen(false);
+  };
+
   return (
     <>
       <Head>
         <title>Stasty - Home</title>
         <link rel='icon' href='/favicon.ico' />
       </Head>
-      <VStack spacing={4}>
+      <VStack spacing={4} position='relative'>
         <header>
           <Center mb={4}>
             <Button
@@ -127,41 +141,16 @@ export default function Home({ initialResults }) {
           )}
           {results &&
             results.map((item) => (
-              <Box
-                w='100%'
-                borderWidth='1px'
-                borderRadius='lg'
-                overflow='hidden'
-                marginBottom={4}
+              <Item
                 key={item._id}
-              >
-                <HStack>
-                  <Box width='100px' height='100px' position='relative'>
-                    <Image
-                      src={item.imageUrl}
-                      layout='fill'
-                      objectFit='cover'
-                    />
-                  </Box>
-                  <Heading size='lg'>{item.title}</Heading>
-                  <Box d='flex' flexDir='row' alignItems='baseline'>
-                    {item.keywords.map((keyword, index) => (
-                      <Badge
-                        borderRadius='full'
-                        px='2'
-                        colorScheme='teal'
-                        key={index}
-                        m={1}
-                        marginBottom={0}
-                      >
-                        {keyword}
-                      </Badge>
-                    ))}
-                  </Box>
-                </HStack>
-              </Box>
+                item={item}
+                handleFullScreenImage={handleFullScreenImage}
+              />
             ))}
         </main>
+        {isFullScreen && (
+          <FullScreenImage imageUrl={imageUrl} onClose={handleExitFullScreen} />
+        )}
       </VStack>
     </>
   );
