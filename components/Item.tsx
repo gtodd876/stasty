@@ -16,7 +16,7 @@ export default function Item({ item, handleFullScreenImage }) {
     >
       <HStack>
         <Box width='100px' height='100px' position='relative'>
-          <Image src={imageUrl} layout='fill' objectFit='cover' />
+          <Image src={imageUrl} layout='fill' objectFit='cover' alt='' />
         </Box>
         <Heading size='lg'>{title}</Heading>
         <Box d='flex' flexDir='row' alignItems='baseline'>

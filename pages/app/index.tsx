@@ -117,12 +117,16 @@ export default function Home({ initialResults }) {
             </Button>
           </Center>
           <Center>
+            <label className='visually-hidden' htmlFor='search'>
+              Search
+            </label>
             <InputGroup maxW='800px' margin='0 auto'>
               <InputLeftElement
                 pointerEvents='none'
                 children={<SearchIcon color='gray.300' />}
               />
               <Input
+                id='search'
                 type='search'
                 placeholder='Search Terms'
                 w='40rem'
