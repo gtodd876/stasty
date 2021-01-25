@@ -20,6 +20,9 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     });
     cloudinary.v2.uploader.destroy(publicId, (error, result) => {
       if (error) console.error(error);
+      if (result) {
+        res.send(200);
+      }
     });
   }
 };
