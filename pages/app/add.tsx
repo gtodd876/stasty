@@ -40,9 +40,6 @@ export default function Add() {
   } = useForm();
   const router = useRouter();
   const [session, loading] = useSession();
-  useEffect(() => {
-    console.log(isSubmitting);
-  }, [isSubmitting]);
 
   useEffect(() => {
     if (isSubmitSuccessful) router.push("/");
@@ -70,7 +67,6 @@ export default function Add() {
   async function handlePhotoSelect(file) {
     setIsUploading(true);
     const imageData = await uploadPhoto(file);
-    console.log("handlephotoselect", { imageData });
 
     if (imageData)
       setImageData({
@@ -85,7 +81,6 @@ export default function Add() {
 
   async function onSubmit(values) {
     values.imageData = imageData;
-    console.log("onsubmit", { imageData });
     values.user = session.user;
     values.keywords = values.keywords
       .trim()

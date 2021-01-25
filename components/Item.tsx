@@ -24,7 +24,6 @@ export default function Item({
       }
     ).catch((err) => console.error("error posting data: ", err));
     if (response) {
-      console.log(response.status);
       if (response.status === 200) {
         handleDeleteItemState(id);
       }
