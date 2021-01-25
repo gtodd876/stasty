@@ -96,6 +96,11 @@ export default function Home({ initialResults }) {
     setIsFullScreen(false);
   };
 
+  const handleDeleteItemState = (id: string) => {
+    const filteredResult = results.filter((item) => item._id !== id);
+    setResults(filteredResult);
+  };
+
   return (
     <>
       <Head>
@@ -149,6 +154,7 @@ export default function Home({ initialResults }) {
                 key={item._id}
                 item={item}
                 handleFullScreenImage={handleFullScreenImage}
+                handleDeleteItemState={handleDeleteItemState}
               />
             ))}
         </main>

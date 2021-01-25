@@ -20,10 +20,18 @@ import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { NextChakraLink } from "../../components/NextChakraLink";
 
+type ImageData = {
+  public_id: string;
+  secure_url: string;
+  width: number;
+  height: number;
+  created_at: string;
+};
+
 export default function Add() {
   const hiddenInput = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [imageUrl, setImageUrl] = useState("");
+  const [imageData, setImageData] = useState<ImageData | null>(null);
   const {
     handleSubmit,
     errors,
@@ -62,12 +70,22 @@ export default function Add() {
   async function handlePhotoSelect(file) {
     setIsUploading(true);
     const imageData = await uploadPhoto(file);
-    if (imageData && imageData.secure_url) setImageUrl(imageData.secure_url);
+    console.log("handlephotoselect", { imageData });
+
+    if (imageData)
+      setImageData({
+        public_id: imageData.public_id,
+        secure_url: imageData.secure_url,
+        width: imageData.width,
+        height: imageData.height,
+        created_at: imageData.created_at,
+      });
     setIsUploading(false);
   }
 
   async function onSubmit(values) {
-    values.imageUrl = imageUrl;
+    values.imageData = imageData;
+    console.log("onsubmit", { imageData });
     values.user = session.user;
     values.keywords = values.keywords
       .trim()
@@ -167,7 +185,9 @@ export default function Add() {
           >
             Add
           </Button>
-          {imageUrl && <Image src={imageUrl} alt='' />}
+          {imageData && imageData?.secure_url && (
+            <Image src={imageData?.secure_url} alt='' />
+          )}
         </VStack>
       </form>
     </Box>
