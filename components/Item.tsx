@@ -162,12 +162,14 @@ export default function Item({
               icon={<EditIcon />}
               justifySelf='end'
               onClick={(event) => handleEdit(event)}
+              alignSelf={{ base: "flex-end", sm: "flex-end", md: "inherit" }}
             />
             <IconButton
               aria-label='delete item'
               icon={<DeleteIcon />}
               justifySelf='end'
               onClick={(event) => handleDelete(event)}
+              alignSelf={{ base: "flex-end", sm: "flex-end", md: "inherit" }}
             />
           </Box>
         </HStack>
