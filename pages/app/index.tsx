@@ -2,6 +2,7 @@ import { AddIcon, SearchIcon } from "@chakra-ui/icons";
 import {
   Button,
   Center,
+  Image,
   Input,
   InputGroup,
   InputLeftElement,
@@ -122,6 +123,19 @@ export default function Home({ initialResults }) {
               Add Image
             </Button>
           </Center>
+          {session && session.user && (
+            <Image
+              src={session.user.image}
+              width='46px'
+              height='46px'
+              borderRadius='50%'
+              zIndex={5}
+              boxShadow='1px 1px 6px 1px rgba(0, 0, 0, 0.25);'
+              position='absolute'
+              top={3}
+              right={8}
+            />
+          )}
           <Center>
             <label className='visually-hidden' htmlFor='search'>
               Search
