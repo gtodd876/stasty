@@ -19,6 +19,7 @@ import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { NextChakraLink } from "../../components/NextChakraLink";
+import { validateKeywords, validateTitle } from "../../utils/validation";
 
 type ImageData = {
   public_id: string;
@@ -100,18 +101,6 @@ export default function Add() {
       const data = await response.json();
       return data;
     } else console.error("No response from server");
-  }
-
-  function validateTitle(value) {
-    if (!value) {
-      return "Title is required";
-    } else return true;
-  }
-
-  function validateKeywords(value) {
-    if (!value) {
-      return "Keywords are required";
-    } else return true;
   }
 
   if (!loading && !session) {
