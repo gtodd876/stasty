@@ -112,6 +112,7 @@ export default function Item({
     <>
       <Box
         w='100%'
+        margin='0 auto'
         borderWidth='1px'
         borderRadius='lg'
         overflow='hidden'
@@ -119,17 +120,26 @@ export default function Item({
         cursor='pointer'
         onClick={(event) => handleFullScreenImage(event, imageData.secure_url)}
       >
-        <HStack>
-          <Box width='100px' height='100px' position='relative'>
+        <HStack padding={[2, 0]}>
+          <Box
+            width='100px'
+            height='100px'
+            position='relative'
+            display={["none", "block"]}
+          >
             <Image src={imageUrl} layout='fill' objectFit='cover' alt='' />
           </Box>
           <Heading size='lg'>{title}</Heading>
-          <Box d='flex' flexDir='row' alignItems='baseline'>
+          <Box
+            d='flex'
+            flexDir={{ base: "column", sm: "column", md: "row", lg: "row" }}
+            alignItems='baseline'
+          >
             {item.keywords.map((keyword: string, index: number) => (
               <Badge
                 borderRadius='full'
                 px='2'
-                colorScheme='teal'
+                colorScheme='purple'
                 key={index}
                 m={1}
                 marginBottom={0}
@@ -138,9 +148,16 @@ export default function Item({
               </Badge>
             ))}
           </Box>
-          <Box flex={1} textAlign='end' marginRight={4}>
+          <Box
+            flex={1}
+            marginRight={4}
+            display='flex'
+            justifyContent='flex-end'
+            flexDir={{ base: "column", sm: "column", md: "row", lg: "row" }}
+          >
             <IconButton
-              marginRight={4}
+              marginRight={{ base: 0, sm: 0, md: 4, lg: 4 }}
+              marginBottom={{ base: 2, sm: 2, md: 0, lg: 0 }}
               aria-label='edit item'
               icon={<EditIcon />}
               justifySelf='end'
