@@ -109,7 +109,7 @@ export default function Home({ initialResults }) {
         <title>Stasty - Home</title>
         <link rel='icon' href='/favicon.ico' />
       </Head>
-      <VStack spacing={4} position='relative'>
+      <VStack spacing={4} position='relative' maxWidth='1200px' margin='0 auto'>
         <header>
           <Center mb={4}>
             <Button
@@ -149,7 +149,7 @@ export default function Home({ initialResults }) {
                 id='search'
                 type='search'
                 placeholder='Search Terms'
-                w='40rem'
+                w='56%'
                 onChange={(event) => {
                   setSearchTerms(event.currentTarget.value);
                   debounceOnChange(event.currentTarget.value);
