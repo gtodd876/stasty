@@ -140,7 +140,7 @@ export default function Home({ initialResults }) {
             <label className='visually-hidden' htmlFor='search'>
               Search
             </label>
-            <InputGroup maxW='800px' margin='0 auto'>
+            <InputGroup maxW='1200px' minW='350px' margin='0 auto'>
               <InputLeftElement
                 pointerEvents='none'
                 children={<SearchIcon color='gray.300' />}
@@ -149,7 +149,6 @@ export default function Home({ initialResults }) {
                 id='search'
                 type='search'
                 placeholder='Search Terms'
-                w='56%'
                 onChange={(event) => {
                   setSearchTerms(event.currentTarget.value);
                   debounceOnChange(event.currentTarget.value);
