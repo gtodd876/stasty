@@ -28,6 +28,7 @@ import { debounce } from "../../utils/debounce";
 
 export default function Home({ initialResults }) {
   const [results, setResults] = useState(initialResults || []);
+  const [searchTerms, setSearchTerms] = useState("");
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [imageUrl, setImageUrl] = useState(initialResults || []);
 
@@ -135,15 +136,16 @@ export default function Home({ initialResults }) {
                 type='search'
                 placeholder='Search Terms'
                 w='40rem'
-                onChange={(event) =>
-                  debounceOnChange(event.currentTarget.value)
-                }
+                onChange={(event) => {
+                  setSearchTerms(event.currentTarget.value);
+                  debounceOnChange(event.currentTarget.value);
+                }}
               />
             </InputGroup>
           </Center>
         </header>
         <main style={{ width: "100%", padding: "2rem" }}>
-          {results.length < 1 && (
+          {results.length < 1 && searchTerms !== "" && (
             <Center>
               <Text fontSize='6xl'>No results 😭</Text>
             </Center>
