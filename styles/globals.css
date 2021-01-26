@@ -24,3 +24,8 @@ a {
   white-space: nowrap;
   width: 1px;
 }
+
+.profile-pic {
+  border-radius: 50%;
+  z-index: 5;
+}
