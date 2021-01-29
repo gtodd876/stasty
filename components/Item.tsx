@@ -26,9 +26,12 @@ import { validateKeywords, validateTitle } from "../utils/validation";
 export default function Item({
   item,
   handleFullScreenImage,
+  handleFullScreenImageKeyNav,
   handleDeleteItemState,
+  itemRef,
 }) {
   const { imageData, title, _id: id } = item;
+  const editItemRef = React.createRef<HTMLButtonElement>();
   const [isEditMode, setIsEditMode] = useState(false);
   const {
     handleSubmit,
@@ -45,8 +48,9 @@ export default function Item({
     }
   }, [isSubmitSuccessful]);
 
-  const handleDelete = async (event: React.MouseEvent) => {
-    event.preventDefault();
+  const handleDelete = async (
+    event: React.MouseEvent | React.KeyboardEvent
+  ) => {
     event.stopPropagation();
     const values = { id };
     const response = await fetch(
@@ -76,11 +80,50 @@ export default function Item({
       return data;
     } else console.error("No response from server");
   };
+  const handleDeleteKeyDown = async (event: React.KeyboardEvent) => {
+    event.stopPropagation();
+    if (event.code === "Space" || event.code === "Enter") {
+      const values = { id };
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_HOST}/api/delete`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(values),
+        }
+      ).catch((err) => console.error("error posting data: ", err));
+      if (response) {
+        if (response.status === 200) {
+          handleDeleteItemState(id);
+        }
+        const data = await response.json();
+
+        await fetch(`${process.env.NEXT_PUBLIC_API_HOST}/api/delete`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ publicId: imageData.public_id }),
+        }).catch((err) => console.error("error posting data: ", err));
+
+        return data;
+      } else console.error("No response from server");
+    }
+  };
 
   const handleEdit = (event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
     setIsEditMode(true);
+  };
+
+  const handleEditKeyDown = (event: React.KeyboardEvent) => {
+    event.stopPropagation();
+    if (event.code === "Space" || event.code === "Enter") {
+      setIsEditMode(true);
+    }
   };
 
   const onEditSubmit = async (values) => {
@@ -111,6 +154,7 @@ export default function Item({
   return (
     <>
       <Box
+        ref={itemRef}
         w='100%'
         margin='0 auto'
         borderWidth='1px'
@@ -118,7 +162,11 @@ export default function Item({
         overflow='hidden'
         marginBottom={4}
         cursor='pointer'
+        tabIndex={0}
         onClick={(event) => handleFullScreenImage(event, imageData.secure_url)}
+        onKeyDown={(event) =>
+          handleFullScreenImageKeyNav(event, imageData.secure_url)
+        }
       >
         <HStack padding={[2, 0]}>
           <Box
@@ -160,8 +208,10 @@ export default function Item({
               marginBottom={{ base: 2, sm: 2, md: 0, lg: 0 }}
               aria-label='edit item'
               icon={<EditIcon />}
+              ref={editItemRef}
               justifySelf='end'
               onClick={(event) => handleEdit(event)}
+              onKeyDown={(event) => handleEditKeyDown(event)}
               alignSelf={{ base: "flex-end", sm: "flex-end", md: "inherit" }}
             />
             <IconButton
@@ -169,6 +219,7 @@ export default function Item({
               icon={<DeleteIcon />}
               justifySelf='end'
               onClick={(event) => handleDelete(event)}
+              onKeyDown={(event) => handleDeleteKeyDown(event)}
               alignSelf={{ base: "flex-end", sm: "flex-end", md: "inherit" }}
             />
           </Box>
@@ -179,6 +230,7 @@ export default function Item({
         isOpen={isEditMode}
         isCentered
         onClose={() => setIsEditMode(false)}
+        finalFocusRef={editItemRef}
       >
         <ModalOverlay />
         <ModalContent>
@@ -213,6 +265,7 @@ export default function Item({
                 isDisabled={isSubmitting}
                 form='edit-form'
                 marginTop={4}
+                onClick={() => setIsEditMode(false)}
               >
                 Submit
               </Button>

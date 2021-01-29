@@ -32,14 +32,14 @@ export default function Home({ initialResults }) {
   const [searchTerms, setSearchTerms] = useState("");
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [imageUrl, setImageUrl] = useState(initialResults || []);
-
+  const closeIconRef = React.useRef(null);
   const debounceOnChange = React.useCallback(
     debounce(handleSearchTerms, 500),
     []
   );
   const router = useRouter();
   const [session, loading] = useSession();
-
+  const itemRef = React.createRef<HTMLDivElement | null>();
   if (!loading && !session) {
     return (
       <Modal
@@ -85,17 +85,39 @@ export default function Home({ initialResults }) {
   }
 
   const handleFullScreenImage = (
-    event:
-      | React.MouseEvent<HTMLDivElement>
-      | React.KeyboardEvent<HTMLDivElement>,
+    event: React.MouseEvent<HTMLDivElement>,
     imageUrl: string
   ) => {
+    event.preventDefault();
     setImageUrl(imageUrl);
     setIsFullScreen(true);
   };
 
+  const handleFullScreenImageKeyNav = (
+    event: React.KeyboardEvent<HTMLDivElement>,
+    imageUrl: string
+  ) => {
+    if (event.code === "Space" || event.code === "Enter") {
+      setImageUrl(imageUrl);
+      setIsFullScreen(true);
+    }
+  };
+
   const handleExitFullScreen = () => {
     setIsFullScreen(false);
+    if (itemRef) {
+      itemRef.current.focus();
+    }
+  };
+
+  const handleExitFullScreenKeyDown = (event) => {
+    event.preventDefault();
+    if (event.code === "Space" || event.code === "Enter") {
+      setIsFullScreen(false);
+      if (itemRef) {
+        itemRef.current.focus();
+      }
+    }
   };
 
   const handleDeleteItemState = (id: string) => {
@@ -169,12 +191,21 @@ export default function Home({ initialResults }) {
                 key={item._id}
                 item={item}
                 handleFullScreenImage={handleFullScreenImage}
+                handleFullScreenImageKeyNav={handleFullScreenImageKeyNav}
                 handleDeleteItemState={handleDeleteItemState}
+                itemRef={itemRef}
               />
             ))}
         </main>
         {isFullScreen && (
-          <FullScreenImage imageUrl={imageUrl} onClose={handleExitFullScreen} />
+          <FullScreenImage
+            itemRef={itemRef}
+            imageUrl={imageUrl}
+            onClose={handleExitFullScreen}
+            closeIconRef={closeIconRef}
+            isFullScreen={isFullScreen}
+            onCloseKeyDown={handleExitFullScreenKeyDown}
+          />
         )}
       </VStack>
     </>
@@ -191,6 +222,7 @@ export async function getServerSideProps(ctx) {
   const props: any = {};
   const { db } = await connectToDb();
   props.initialResults = (await getAllItems(db, session.user.id)) || [];
+  console.log(props.initialResults);
   return {
     props,
   };
