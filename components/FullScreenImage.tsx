@@ -1,6 +1,20 @@
 import { Box, Image } from "@chakra-ui/react";
+import { useEffect } from "react";
 
-export default function FullScreenImage({ imageUrl, onClose }) {
+export default function FullScreenImage({
+  imageUrl,
+  onClose,
+  isFullScreen,
+  closeIconRef,
+  onCloseKeyDown,
+  itemRef,
+}) {
+  useEffect(() => {
+    if (isFullScreen && closeIconRef) {
+      closeIconRef.current.focus();
+    }
+  }, [closeIconRef, isFullScreen]);
+
   return (
     <>
       <Box
@@ -26,6 +40,7 @@ export default function FullScreenImage({ imageUrl, onClose }) {
       <Box
         cursor='pointer'
         onClick={() => onClose()}
+        onKeyDown={(event) => onCloseKeyDown(event)}
         fontSize='24px'
         position='absolute'
         top='32px'
@@ -36,6 +51,8 @@ export default function FullScreenImage({ imageUrl, onClose }) {
         padding='8px 16px'
         borderRadius='50%'
         opacity='0.8'
+        tabIndex={0}
+        ref={closeIconRef}
       >
         X
       </Box>

@@ -11,9 +11,7 @@ export const connectToDb = async () => {
       connectTimeoutMS: 10000,
     });
 
-    console.log("connecting to DB");
     await global.mongo.client.connect();
-    console.log("connected to DB");
   }
 
   const db: Db = global.mongo.client.db(process.env.DATABASE_NAME);
