@@ -152,7 +152,7 @@ export default function Item({
           handleFullScreenImageKeyNav(event, imageData.secure_url)
         }
       >
-        <HStack padding={[2, 0]}>
+        <HStack px={3} py={1}>
           <Box
             width='100px'
             height='100px'
