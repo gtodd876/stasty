@@ -12,6 +12,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Spinner,
   Text,
   VStack,
 } from "@chakra-ui/react";
@@ -19,26 +20,29 @@ import { getSession, useSession } from "next-auth/client";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
+import {
+  QueryClient,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "react-query";
+import { dehydrate } from "react-query/hydration";
 import FullScreenImage from "../../components/FullScreenImage";
 import Item from "../../components/Item";
 import { NextChakraLink } from "../../components/NextChakraLink";
 import { connectToDb } from "../../db/database";
 import { getAllItems } from "../../db/item";
-import { UserSession } from "../../types";
 import { debounce } from "../../utils/debounce";
 
-export default function Home({ initialResults }) {
-  const [results, setResults] = useState(initialResults || []);
+export default function Home() {
   const [searchTerms, setSearchTerms] = useState("");
   const [isFullScreen, setIsFullScreen] = useState(false);
-  const [imageUrl, setImageUrl] = useState(initialResults || []);
+  const [imageUrl, setImageUrl] = useState("");
   const closeIconRef = React.useRef(null);
-  const debounceOnChange = React.useCallback(
-    debounce(handleSearchTerms, 500),
-    []
-  );
+
   const router = useRouter();
   const [session, loading] = useSession();
+
   const itemRef = React.createRef<HTMLDivElement | null>();
   if (!loading && !session) {
     return (
@@ -62,9 +66,23 @@ export default function Home({ initialResults }) {
     );
   }
 
+  const fetcher = () =>
+    fetch(`${process.env.NEXT_PUBLIC_API_HOST}/api/items`).then((res) =>
+      res.json()
+    );
+
+  const { data, isError, isLoading, isFetching } = useQuery("items", fetcher);
+  const queryClient = useQueryClient();
+  const mutation = useMutation(handleSearchTerms, {
+    onSuccess: (data) => queryClient.setQueryData("items", data),
+  });
+  const debounceOnChange = React.useCallback(
+    debounce(mutation.mutate, 500),
+    []
+  );
   async function handleSearchTerms(searchTerms: string) {
+    const { user } = session;
     if (searchTerms && session) {
-      const { user } = session;
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_HOST}/api/search`,
         {
@@ -76,11 +94,11 @@ export default function Home({ initialResults }) {
         }
       ).catch((err) => console.error("error posting data: ", err));
       if (response) {
-        const data = await response.json();
-        setResults(data);
-      } else console.error("No response from server");
-    } else {
-      setResults(initialResults);
+        const results = await response.json();
+        return results;
+      }
+    } else if (!searchTerms && session) {
+      queryClient.invalidateQueries("items");
     }
   }
 
@@ -120,10 +138,13 @@ export default function Home({ initialResults }) {
     }
   };
 
-  const handleDeleteItemState = (id: string) => {
-    const filteredResult = results.filter((item) => item._id !== id);
-    setResults(filteredResult);
-  };
+  if (isError) {
+    return <div>there is an error</div>;
+  }
+
+  if (isLoading) {
+    return <div>is loading...</div>;
+  }
 
   return (
     <>
@@ -134,6 +155,7 @@ export default function Home({ initialResults }) {
       <VStack spacing={4} position='relative' maxWidth='1200px' margin='0 auto'>
         <header>
           <Center mb={4}>
+            {isFetching && <Spinner size='sm' />}
             <Button
               aria-label='Add photo'
               leftIcon={<AddIcon />}
@@ -145,7 +167,7 @@ export default function Home({ initialResults }) {
               Add Image
             </Button>
           </Center>
-          {session && session.user && (
+          {session && session.user && session.user.image && (
             <Image
               src={session.user.image}
               width='46px'
@@ -180,19 +202,19 @@ export default function Home({ initialResults }) {
           </Center>
         </header>
         <main style={{ width: "100%", padding: "2rem" }}>
-          {results.length < 1 && searchTerms !== "" && (
+          {data && data?.length < 1 && searchTerms !== "" && (
             <Center>
               <Text fontSize='6xl'>No results 😭</Text>
             </Center>
           )}
-          {results &&
-            results.map((item) => (
+          {!isLoading &&
+            !isError &&
+            data.map((item) => (
               <Item
                 key={item._id}
                 item={item}
                 handleFullScreenImage={handleFullScreenImage}
                 handleFullScreenImageKeyNav={handleFullScreenImageKeyNav}
-                handleDeleteItemState={handleDeleteItemState}
                 itemRef={itemRef}
               />
             ))}
@@ -219,11 +241,15 @@ export async function getServerSideProps(ctx) {
       props: { session },
     };
   }
-  const props: any = {};
   const { db } = await connectToDb();
-  props.initialResults = (await getAllItems(db, session.user.id)) || [];
-  console.log(props.initialResults);
+  const queryClient = new QueryClient();
+
+  await queryClient.prefetchQuery("items", () =>
+    getAllItems(db, session.user.id)
+  );
   return {
-    props,
+    props: {
+      dehydratedState: dehydrate(queryClient),
+    },
   };
 }

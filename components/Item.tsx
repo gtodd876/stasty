@@ -12,104 +12,78 @@ import {
   Input,
   Modal,
   ModalBody,
+  ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Text,
+  Textarea,
 } from "@chakra-ui/react";
 import Image from "next/image";
-import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useMutation, useQueryClient } from "react-query";
 import { validateKeywords, validateTitle } from "../utils/validation";
 
 export default function Item({
   item,
   handleFullScreenImage,
   handleFullScreenImageKeyNav,
-  handleDeleteItemState,
   itemRef,
 }) {
-  const { imageData, title, _id: id } = item;
+  const { imageData, title, _id: id, notes } = item;
   const editItemRef = React.createRef<HTMLButtonElement>();
   const [isEditMode, setIsEditMode] = useState(false);
+  const queryClient = useQueryClient();
   const {
     handleSubmit,
     errors,
     register,
     formState: { isSubmitting, isSubmitSuccessful },
   } = useForm();
-  const router = useRouter();
 
   useEffect(() => {
     if (isSubmitSuccessful) {
       setIsEditMode(false);
-      router.push("/");
     }
   }, [isSubmitSuccessful]);
 
-  const handleDelete = async (
-    event: React.MouseEvent | React.KeyboardEvent
-  ) => {
-    event.stopPropagation();
-    const values = { id };
+  const deleteDocById = async () => {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_HOST}/api/delete`,
+      `${process.env.NEXT_PUBLIC_API_HOST}/api/delete/${id}`,
       {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
       }
     ).catch((err) => console.error("error posting data: ", err));
     if (response) {
-      if (response.status === 200) {
-        handleDeleteItemState(id);
-      }
       const data = await response.json();
+      return data;
+    }
+  };
 
-      await fetch(`${process.env.NEXT_PUBLIC_API_HOST}/api/delete`, {
+  const deleteMutation = useMutation(deleteDocById, {
+    onSuccess: () => queryClient.invalidateQueries("items"),
+    onMutate: async () => {
+      await fetch(`${process.env.NEXT_PUBLIC_API_HOST}/api/delete/${id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ publicId: imageData.public_id }),
       }).catch((err) => console.error("error posting data: ", err));
+    },
+  });
 
-      return data;
-    } else console.error("No response from server");
+  const handleDelete = async (event: React.MouseEvent) => {
+    event.stopPropagation();
+    deleteMutation.mutate();
   };
+
   const handleDeleteKeyDown = async (event: React.KeyboardEvent) => {
     event.stopPropagation();
     if (event.code === "Space" || event.code === "Enter") {
-      const values = { id };
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_HOST}/api/delete`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(values),
-        }
-      ).catch((err) => console.error("error posting data: ", err));
-      if (response) {
-        if (response.status === 200) {
-          handleDeleteItemState(id);
-        }
-        const data = await response.json();
-
-        await fetch(`${process.env.NEXT_PUBLIC_API_HOST}/api/delete`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ publicId: imageData.public_id }),
-        }).catch((err) => console.error("error posting data: ", err));
-
-        return data;
-      } else console.error("No response from server");
+      deleteMutation.mutate();
     }
   };
 
@@ -126,14 +100,9 @@ export default function Item({
     }
   };
 
-  const onEditSubmit = async (values) => {
-    values.keywords = values.keywords
-      .trim()
-      .split(" ")
-      .map((word) => word.trim());
-    values.itemId = id;
+  const editDocById = async (values) => {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_HOST}/api/edit`,
+      `${process.env.NEXT_PUBLIC_API_HOST}/api/edit/${id}`,
       {
         method: "PUT",
         headers: {
@@ -146,7 +115,22 @@ export default function Item({
     if (response) {
       const data = await response.json();
       return data;
-    } else console.error("No response from server");
+    }
+  };
+
+  const editMutation = useMutation(editDocById, {
+    onSuccess: () => {
+      setIsEditMode(false);
+      queryClient.invalidateQueries("items");
+    },
+  });
+
+  const onEditSubmit = async (values) => {
+    values.keywords = values.keywords
+      .trim()
+      .split(" ")
+      .map((word) => word.trim());
+    editMutation.mutate(values);
   };
 
   const imageUrl = imageData?.secure_url ? imageData.secure_url : "";
@@ -177,24 +161,31 @@ export default function Item({
           >
             <Image src={imageUrl} layout='fill' objectFit='cover' alt='' />
           </Box>
-          <Heading size='lg'>{title}</Heading>
-          <Box
-            d='flex'
-            flexDir={{ base: "column", sm: "column", md: "row", lg: "row" }}
-            alignItems='baseline'
-          >
-            {item.keywords.map((keyword: string, index: number) => (
-              <Badge
-                borderRadius='full'
-                px='2'
-                colorScheme='purple'
-                key={index}
-                m={1}
-                marginBottom={0}
-              >
-                {keyword}
-              </Badge>
-            ))}
+          <Box>
+            <Heading size='lg'>{title}</Heading>
+            <Box
+              d='flex'
+              flexDir={{ base: "column", sm: "column", md: "row", lg: "row" }}
+              alignItems='baseline'
+            >
+              {item.keywords.map((keyword: string, index: number) => (
+                <Badge
+                  borderRadius='full'
+                  px='2'
+                  colorScheme='purple'
+                  key={index}
+                  m={1}
+                  marginBottom={0}
+                >
+                  {keyword}
+                </Badge>
+              ))}
+            </Box>
+            {notes && (
+              <Text p={4} pl={0}>
+                Notes: {notes}
+              </Text>
+            )}
           </Box>
           <Box
             flex={1}
@@ -235,6 +226,7 @@ export default function Item({
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Edit</ModalHeader>
+          <ModalCloseButton />
           <ModalBody>
             <form id='edit-form' onSubmit={handleSubmit(onEditSubmit)}>
               <FormControl id='title' isInvalid={errors.name}>
@@ -259,13 +251,20 @@ export default function Item({
                   defaultValue={item.keywords.join(" ")}
                 />
               </FormControl>
+              <FormControl id='notes'>
+                <FormLabel>Notes</FormLabel>
+                <Textarea
+                  name='notes'
+                  ref={register()}
+                  defaultValue={item.notes}
+                />
+              </FormControl>
               <Button
                 type='submit'
                 isLoading={isSubmitting}
                 isDisabled={isSubmitting}
                 form='edit-form'
                 marginTop={4}
-                onClick={() => setIsEditMode(false)}
               >
                 Submit
               </Button>

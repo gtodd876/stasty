@@ -1,11 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { connectToDb } from "../../db/database";
+import { connectToDb } from "../../../db/database";
 import cloudinary from "cloudinary";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === "DELETE") {
     const { db } = await connectToDb();
-    const { id } = req.body;
+    const { id } = req.query;
     const result = await db.collection("screenshots").deleteOne({ _id: id });
 
     res.json(result);
