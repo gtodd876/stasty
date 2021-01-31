@@ -101,8 +101,8 @@ export default function Home() {
         const results = await response.json();
         return results;
       }
-    } else if (!searchTerms && session) {
-      queryClient.invalidateQueries("items");
+    } else if (searchTerms === "") {
+      queryClient.invalidateQueries("items", { exact: true });
     }
   }
 
@@ -221,7 +221,7 @@ export default function Home() {
           )}
           {!isLoading &&
             !isError &&
-            data.map((item) => (
+            data?.map((item) => (
               <Item
                 key={item._id}
                 item={item}
