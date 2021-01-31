@@ -21,10 +21,11 @@ export const createItem = async (db: Db, item: Item) => {
 };
 
 export const getAllItems = async (db: Db, userId: string) => {
-  return await db
+  const result = await db
     .collection("screenshots")
     .find({ createdBy: userId })
     .toArray();
+  return result;
 };
 
 export const getItem = async (db: Db, itemId: string) => {

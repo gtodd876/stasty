@@ -8,6 +8,14 @@ export interface UserSession {
   name: string;
 }
 
+import "next-auth";
+
+declare module "next-auth" {
+  interface User {
+    id: string;
+  }
+}
+
 export interface Request extends NextApiRequest {
   db: Db;
   dbClient: MongoClient;

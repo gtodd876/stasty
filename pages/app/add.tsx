@@ -12,6 +12,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Textarea,
   VStack,
 } from "@chakra-ui/react";
 import { getSession, useSession } from "next-auth/client";
@@ -81,6 +82,8 @@ export default function Add() {
   }
 
   async function onSubmit(values) {
+    values.notes = values.notes || "";
+    values.notes.trim();
     values.imageData = imageData;
     values.user = session.user;
     values.keywords = values.keywords
@@ -161,6 +164,10 @@ export default function Add() {
               type='text'
               ref={register({ validate: validateKeywords })}
             />
+          </FormControl>
+          <FormControl id='notes'>
+            <FormLabel>Notes</FormLabel>
+            <Textarea name='notes' ref={register({ maxLength: 250 })} />
           </FormControl>
           <Button
             type='submit'
