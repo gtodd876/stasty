@@ -158,9 +158,11 @@ export default function Home() {
       </Head>
       <VStack spacing={4} position='relative' maxWidth='1200px' margin='0 auto'>
         <header>
-          <FormControl position='absolute' top={3} left={8} display='flex'>
+          <FormControl position='absolute' top={3} left={8} width='unset'>
             <FormLabel htmlFor='color-mode'>
-              Toggle {colorMode === "light" ? "Dark" : "Light"}
+              <span className='visually-hidden'>
+                Toggle {colorMode === "light" ? "Dark" : "Light"} mode
+              </span>
             </FormLabel>
             <Switch id='color-mode' onChange={toggleColorMode} size='lg' />
           </FormControl>
