@@ -14,7 +14,11 @@ import {
   ModalOverlay,
   Spinner,
   Text,
+  useColorMode,
   VStack,
+  Switch,
+  FormControl,
+  FormLabel,
 } from "@chakra-ui/react";
 import { getSession, useSession } from "next-auth/client";
 import Head from "next/head";
@@ -42,7 +46,7 @@ export default function Home() {
 
   const router = useRouter();
   const [session, loading] = useSession();
-
+  const { colorMode, toggleColorMode } = useColorMode();
   const itemRef = React.createRef<HTMLDivElement | null>();
   if (!loading && !session) {
     return (
@@ -154,6 +158,12 @@ export default function Home() {
       </Head>
       <VStack spacing={4} position='relative' maxWidth='1200px' margin='0 auto'>
         <header>
+          <FormControl position='absolute' top={3} left={8} display='flex'>
+            <FormLabel htmlFor='color-mode'>
+              Toggle {colorMode === "light" ? "Dark" : "Light"}
+            </FormLabel>
+            <Switch id='color-mode' onChange={toggleColorMode} size='lg' />
+          </FormControl>
           <Center mb={4}>
             {isFetching && <Spinner size='sm' />}
             <Button
