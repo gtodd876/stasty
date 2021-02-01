@@ -168,6 +168,7 @@ export default function Home() {
             <Switch
               id='color-mode'
               onChange={toggleColorMode}
+              isChecked={colorMode === "dark"}
               size='lg'
               px={2}
             />
