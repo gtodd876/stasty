@@ -1,4 +1,4 @@
-import { AddIcon, SearchIcon } from "@chakra-ui/icons";
+import { AddIcon, MoonIcon, SearchIcon, SunIcon } from "@chakra-ui/icons";
 import {
   Button,
   Center,
@@ -164,7 +164,14 @@ export default function Home() {
                 Toggle {colorMode === "light" ? "Dark" : "Light"} mode
               </span>
             </FormLabel>
-            <Switch id='color-mode' onChange={toggleColorMode} size='lg' />
+            <SunIcon />
+            <Switch
+              id='color-mode'
+              onChange={toggleColorMode}
+              size='lg'
+              px={2}
+            />
+            <MoonIcon />
           </FormControl>
           <Center mb={4}>
             {isFetching && <Spinner size='sm' />}
