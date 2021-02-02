@@ -36,5 +36,8 @@
   },
   "resolutions": {
     "typeorm": "0.3.0-alpha.24"
+  },
+  "volta": {
+    "node": "15.7.0"
   }
 }
