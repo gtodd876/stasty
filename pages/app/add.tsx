@@ -1,4 +1,10 @@
 import {
+  ArrowBackIcon,
+  ArrowUpIcon,
+  CheckIcon,
+  CloseIcon,
+} from "@chakra-ui/icons";
+import {
   Box,
   Button,
   FormControl,
@@ -32,6 +38,7 @@ type ImageData = {
 
 export default function Add() {
   const hiddenInput = useRef<HTMLInputElement | null>(null);
+  const formRef = useRef<HTMLFormElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [imageData, setImageData] = useState<ImageData | null>(null);
   const {
@@ -106,6 +113,40 @@ export default function Add() {
     } else console.error("No response from server");
   }
 
+  const handleBackButton = async () => {
+    if (imageData) {
+      await fetch(
+        `${process.env.NEXT_PUBLIC_API_HOST}/api/delete/image/${imageData.public_id}`,
+        {
+          method: "DELETE",
+        }
+      ).catch((err) => console.error("error deleting image: ", err));
+    }
+    setImageData(null);
+    router.push("/app");
+  };
+
+  const handleResetButton = async () => {
+    if (formRef) {
+      const title = formRef.current.elements[2] as HTMLInputElement;
+      title.value = "";
+      const keywords = formRef.current.elements[3] as HTMLInputElement;
+      keywords.value = "";
+      const notes = formRef.current.elements[4] as HTMLTextAreaElement;
+      notes.value = "";
+    }
+
+    if (imageData) {
+      await fetch(
+        `${process.env.NEXT_PUBLIC_API_HOST}/api/delete/image/${imageData.public_id}`,
+        {
+          method: "DELETE",
+        }
+      ).catch((err) => console.error("error deleting image: ", err));
+    }
+    setImageData(null);
+  };
+
   if (!loading && !session) {
     return (
       <Modal
@@ -130,13 +171,15 @@ export default function Add() {
 
   return (
     <Box p={8}>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)} ref={formRef}>
         <VStack spacing={8}>
           <Button
             onClick={() => {
               if (hiddenInput) hiddenInput.current.click();
             }}
             isLoading={isUploading}
+            leftIcon={<ArrowUpIcon />}
+            colorScheme='blue'
           >
             Upload Photo
           </Button>
@@ -169,13 +212,37 @@ export default function Add() {
             <FormLabel>Notes</FormLabel>
             <Textarea name='notes' ref={register({ maxLength: 250 })} />
           </FormControl>
-          <Button
-            type='submit'
-            isLoading={isSubmitting}
-            isDisabled={isSubmitting}
+          <Box
+            display={["flex", "block"]}
+            flexDir={["row", "unset"]}
+            flexWrap={["wrap", "unset"]}
+            justifyContent={["center"]}
           >
-            Add
-          </Button>
+            <Button
+              type='submit'
+              isLoading={isSubmitting}
+              isDisabled={isSubmitting}
+              marginRight={2}
+              colorScheme='green'
+              leftIcon={<CheckIcon />}
+            >
+              Confirm
+            </Button>
+            <Button
+              marginRight={2}
+              colorScheme='red'
+              leftIcon={<CloseIcon />}
+              onClick={() => handleResetButton()}
+            >
+              Reset
+            </Button>
+            <Button
+              onClick={() => handleBackButton()}
+              leftIcon={<ArrowBackIcon />}
+            >
+              Back
+            </Button>
+          </Box>
           {imageData && imageData?.secure_url && (
             <Image src={imageData?.secure_url} alt='' />
           )}

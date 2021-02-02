@@ -71,7 +71,7 @@ export default function Item({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ publicId: imageData.public_id }),
-      }).catch((err) => console.error("error posting data: ", err));
+      }).catch((err) => console.error("error deleting image: ", err));
     },
   });
 
