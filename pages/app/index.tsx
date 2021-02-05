@@ -2,25 +2,27 @@ import { AddIcon, MoonIcon, SearchIcon, SunIcon } from "@chakra-ui/icons";
 import {
   Button,
   Center,
+  FormControl,
+  FormLabel,
+  HStack,
   Image,
   Input,
   InputGroup,
   InputLeftElement,
   Modal,
   ModalBody,
+  ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalHeader,
   ModalOverlay,
   Spinner,
+  Switch,
   Text,
   useColorMode,
   VStack,
-  Switch,
-  FormControl,
-  FormLabel,
 } from "@chakra-ui/react";
-import { getSession, useSession } from "next-auth/client";
+import { getSession, signOut, useSession } from "next-auth/client";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
@@ -40,9 +42,11 @@ import { debounce } from "../../utils/debounce";
 
 export default function Home() {
   const [searchTerms, setSearchTerms] = useState("");
+  const [showSignoutModal, setShowSignoutModal] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
   const closeIconRef = React.useRef(null);
+  const addButtonRef = React.useRef<HTMLButtonElement | null>(null);
 
   const router = useRouter();
   const [session, loading] = useSession();
@@ -158,13 +162,13 @@ export default function Home() {
       </Head>
       <VStack spacing={4} position='relative' maxWidth='1200px' margin='0 auto'>
         <header>
-          <FormControl position='absolute' top={3} left={8} width='unset'>
+          <FormControl position='absolute' top={3} left={[1, 8]} width='unset'>
             <FormLabel htmlFor='color-mode'>
               <span className='visually-hidden'>
                 Toggle {colorMode === "light" ? "Dark" : "Light"} mode
               </span>
             </FormLabel>
-            <SunIcon />
+            <SunIcon display={["none", "inline-block"]} />
             <Switch
               id='color-mode'
               onChange={toggleColorMode}
@@ -172,7 +176,7 @@ export default function Home() {
               size='lg'
               px={2}
             />
-            <MoonIcon />
+            <MoonIcon display={["none", "inline-block"]} />
           </FormControl>
           <Center mb={4}>
             {isFetching && <Spinner size='sm' />}
@@ -183,22 +187,29 @@ export default function Home() {
               size='lg'
               mt='3'
               ml='4'
+              ref={addButtonRef}
             >
               Add Image
             </Button>
           </Center>
           {session && session.user && session.user.image && (
-            <Image
-              src={session.user.image}
-              width='46px'
-              height='46px'
-              borderRadius='50%'
-              zIndex={5}
-              boxShadow='1px 1px 6px 1px rgba(0, 0, 0, 0.25);'
-              position='absolute'
-              top={3}
-              right={8}
-            />
+            <HStack position='absolute' top={3} right={[1, 8]}>
+              <Image
+                src={session.user.image}
+                display={["none", "none", "block"]}
+                width='46px'
+                height='46px'
+                borderRadius='50%'
+                zIndex={5}
+                boxShadow='1px 1px 6px 1px rgba(0, 0, 0, 0.25);'
+              />
+              <span className='visually-hidden'>
+                click to open the sign out modal
+              </span>
+              <Button variant='link' onClick={() => setShowSignoutModal(true)}>
+                Sign out
+              </Button>
+            </HStack>
           )}
           <Center>
             <label className='visually-hidden' htmlFor='search'>
@@ -250,6 +261,31 @@ export default function Home() {
           />
         )}
       </VStack>
+      {showSignoutModal && (
+        <Modal
+          closeOnOverlayClick={true}
+          isOpen={showSignoutModal}
+          isCentered
+          onClose={() => setShowSignoutModal(false)}
+          finalFocusRef={addButtonRef}
+        >
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Would you like to sign out?</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <Button
+                onClick={() => {
+                  signOut();
+                  router.push("/");
+                }}
+              >
+                Sign Out
+              </Button>
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+      )}
     </>
   );
 }
